@@ -8,12 +8,19 @@ from modules.ui_components import ToolButton
 
 from math import gcd
 
-aspect_ratios_dir = scripts.basedir()
+scripts_base = Path(scripts.basedir())
+customizations_base = Path(*scripts_base.parts, "..", "..", scripts_base.parts[-1])
 
 calculator_symbol = "\U0001F5A9"
 switch_values_symbol = "\U000021C5"
 get_dimensions_symbol = "\u2B07\ufe0f"
 get_image_dimensions_symbol = "\U0001F5BC"
+
+def resolve_filename(filename):
+    p = Path(customizations_base, filename)
+    if p.exists():
+        return p
+    return Path(scripts_base, filename)
 
 
 class ResButton(ToolButton):
@@ -49,7 +56,7 @@ class ARButton(ToolButton):
 
 def parse_aspect_ratios_file(filename):
     labels, values, comments = [], [], []
-    file = Path(aspect_ratios_dir, filename)
+    file = resolve_filename(filename)
 
     if not file.exists():
         return labels, values, comments
@@ -85,7 +92,7 @@ def parse_aspect_ratios_file(filename):
 
 def parse_resolutions_file(filename):
     labels, values, comments = [], [], []
-    file = Path(aspect_ratios_dir, filename)
+    file = resolve_filename(filename)
 
     if not file.exists():
         return labels, values, comments
@@ -144,7 +151,7 @@ def write_resolutions_file(filename):
 
 
 def write_js_titles_file(button_titles):
-    filename = Path(aspect_ratios_dir, "javascript", "button_titles.js")
+    filename = Path(scripts_base, "javascript", "button_titles.js")
     content = [
         "// Do not put custom titles here. This file is overwritten each time the WebUI is started.\n"
     ]
@@ -193,7 +200,7 @@ def solve_aspect_ratio(w, h, n, d):
 
 class AspectRatioScript(scripts.Script):
     def read_aspect_ratios(self):
-        ar_file = Path(aspect_ratios_dir, "aspect_ratios.txt")
+        ar_file = resolve_filename("aspect_ratios.txt")
         if not ar_file.exists():
             write_aspect_ratios_file(ar_file)
 
@@ -212,7 +219,7 @@ class AspectRatioScript(scripts.Script):
         # see https://github.com/alemelis/sd-webui-ar/issues/5
 
     def read_resolutions(self):
-        res_file = Path(aspect_ratios_dir, "resolutions.txt")
+        res_file = resolve_filename("resolutions.txt")
         if not res_file.exists():
             write_resolutions_file(res_file)
 
